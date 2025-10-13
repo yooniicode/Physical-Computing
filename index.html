@@ -43,8 +43,8 @@
       // JSON이면 파싱해서 예쁘게, 아니면 원문 출력
       try {
         const obj = JSON.parse(text);
-        const t = (obj.t ?? obj.temp ?? obj.temperature);
-        const h = (obj.h ?? obj.hum  ?? obj.humidity);
+        const t = (obj.t ?? obj.temp ?? obj.temperature ?? obj["온도"]);
+        const h = (obj.h ?? obj.hum  ?? obj.humidity  ?? obj["습도"]);
         const ts= obj.ts ? new Date(obj.ts*1000).toLocaleString() : new Date().toLocaleString();
         html = `
           <div class="message-item">
