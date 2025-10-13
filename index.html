@@ -23,8 +23,7 @@
     client.on('connect', () => {
       console.log(`✅ 접속 성공! (클라이언트 ID: ${clientId})`);
 
-      // ★ 요구사항: 구독 토픽을 'ewha/0317137263' 그대로 유지
-      const topic = 'ewha/0317137263';
+      const topic = 'ewha/2391017';
       client.subscribe(topic, (err) => {
         if (!err) {
           console.log(`📄 토픽 구독 성공: ${topic}`);
