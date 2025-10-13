@@ -1,36 +1,74 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>2025-2 사물인터넷개론</title>
+  <meta charset="utf-8" />
+  <title>My</title>
+  <h3>나의 웹(2391017, 이윤지)</h3>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    #main { max-width: 520px; border: 1px solid #ddd; border-radius: 12px; padding: 16px; height: 320px; overflow-y: auto; }
+    .message-item { padding: 8px 10px; margin: 6px 0; border-radius: 10px; background: #f7f8fa; }
+    .kv { font-size: 14px; color: #333; }
+    .ts { font-size: 12px; color: #666; }
+  </style>
+  <script>
+    const brokerUrl = 'wss://damoa.io:9002';
+    const clientId  = 'iot-client-' + Math.random().toString(16).substr(2, 8);
+    const options   = { clientId };
+
+    console.log(`MQTT 브로커(${brokerUrl}) 접속 시도...`);
+    const client = mqtt.connect(brokerUrl, options);
+
+    client.on('connect', () => {
+      console.log(`✅ 접속 성공! (클라이언트 ID: ${clientId})`);
+
+      // ★ 요구사항: 구독 토픽을 'ewha/0317137263' 그대로 유지
+      const topic = 'ewha/0317137263';
+      client.subscribe(topic, (err) => {
+        if (!err) {
+          console.log(`📄 토픽 구독 성공: ${topic}`);
+          client.publish('ewha/checkin', '2391017 이윤지');
+        } else {
+          console.error('토픽 구독 오류:', err);
+        }
+      });
+    });
+
+    client.on('message', (topic, message) => {
+      const main = document.getElementById('main');
+      const text = message.toString();
+      let html  = '';
+
+      // JSON이면 파싱해서 예쁘게, 아니면 원문 출력
+      try {
+        const obj = JSON.parse(text);
+        const t = (obj.t ?? obj.temp ?? obj.temperature);
+        const h = (obj.h ?? obj.hum  ?? obj.humidity);
+        const ts= obj.ts ? new Date(obj.ts*1000).toLocaleString() : new Date().toLocaleString();
+        html = `
+          <div class="message-item">
+            <div class="kv">🌡️ 온도: <b>${t}</b> °C &nbsp; • &nbsp; 💧 습도: <b>${h}</b> %</div>
+            <div class="ts">토픽: ${topic} • 시각: ${ts}</div>
+          </div>`;
+      } catch(e) {
+        html = `
+          <div class="message-item">
+            <div class="kv">${text}</div>
+            <div class="ts">토픽: ${topic} • 시각: ${new Date().toLocaleString()}</div>
+          </div>`;
+      }
+      main.insertAdjacentHTML('beforeend', html);
+      main.scrollTop = main.scrollHeight;
+    });
+
+    client.on('error', (err) => {
+      console.error('연결 오류:', err);
+      client.end();
+    });
+  </script>
 </head>
 <body>
-
-<h1>~o( =∩ω∩= )m</h1>
-<br>
-<p>
-    이 파일은 과제를 위해 만든 간단한 HTML 문서입니다.
-</p>
-
-<h2>나의 목표</h2>
-<ol>
-    <li>아두이노 안 부수기</li>
-    <li>재밌게 수업 듣기</li>
-</ol>
-
-<h2>나의 취미</h2>
-<ul>
-    <li>밥 먹기</li>
-    <li>눕기</li>
-</ul>
-
-<h2>예의바른 고양이</h2>
-<img src="https://i.imgur.com/hrVebiM.png" alt="고양이를 드립니다" width="300">
-
-<p>
-    깃허브 페이지로 돌아가기 🪄
-    <a href="https://github.com/yooniicode/Physical-Computing" target="_blank">GitHub</a>
-</p>
-
+  <div id="main"></div>
 </body>
 </html>
